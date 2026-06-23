@@ -1,0 +1,363 @@
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS Bolumler (
+    Bolum_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Bolum_Adi TEXT NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS Kalite_Kontrol (
+    Kontrol_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Uretim_ID INTEGER,
+    Kontrol_Tarihi DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Hata_Aciklamasi TEXT,
+    FOREIGN KEY (Uretim_ID) REFERENCES Uretim(Uretim_ID)
+);
+CREATE TABLE IF NOT EXISTS Makinalar (
+    Makine_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Makine_Adi TEXT NOT NULL,
+    Model TEXT,
+    Son_Bakim_Tarihi DATETIME,
+    Durum TEXT DEFAULT 'Aktif' CHECK (Durum IN ('Aktif', 'Arızalı', 'Bakımda'))
+);
+CREATE TABLE IF NOT EXISTS Makine_Bakim_Loglari (
+    Bakim_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Makine_ID INTEGER,
+    Bakim_Tarihi DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Aciklama TEXT,
+    FOREIGN KEY (Makine_ID) REFERENCES Makinalar(Makine_ID)
+);
+CREATE TABLE IF NOT EXISTS Parca_Tipleri (
+    Tip_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Parca_Adi TEXT NOT NULL,
+    Malzeme_Tipi TEXT, 
+    Kritiklik_Seviyesi TEXT CHECK (Kritiklik_Seviyesi IN ('Yüksek', 'Orta', 'Düşük'))
+);
+CREATE TABLE IF NOT EXISTS Teknisyen_Islem_Log (
+    Log_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Islem_Tipi TEXT,
+    Ayrinti TEXT,
+    Tarih DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS Teknisyenler (
+    Teknisyen_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Ad TEXT NOT NULL,
+    Soyad TEXT NOT NULL,
+    Bolum_ID INTEGER,
+    Deneyim_Yili INTEGER CHECK (Deneyim_Yili >= 0),
+    FOREIGN KEY (Bolum_ID) REFERENCES Bolumler(Bolum_ID)
+);
+CREATE TABLE IF NOT EXISTS Uretim (
+    Uretim_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Seri_No TEXT UNIQUE NOT NULL,
+    Tip_ID INTEGER,
+    Makine_ID INTEGER,
+    Teknisyen_ID INTEGER,
+    Uretim_Tarihi DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Durum TEXT DEFAULT 'Beklemede' CHECK (Durum IN ('Hatasız', 'Hatalı', 'Beklemede', 'İncelemede')),
+    FOREIGN KEY (Tip_ID) REFERENCES Parca_Tipleri(Tip_ID),
+    FOREIGN KEY (Makine_ID) REFERENCES Makinalar(Makine_ID),
+    FOREIGN KEY (Teknisyen_ID) REFERENCES Teknisyenler(Teknisyen_ID)
+);
+INSERT INTO "Bolumler" ("Bolum_ID","Bolum_Adi") VALUES (1,'Gövde Montaj'),
+ (2,'Kanat Üretim'),
+ (3,'Motor Bakım'),
+ (4,'Aviyonik Test'),
+ (5,'Boya Atölyesi'),
+ (6,'İniş Takımı Montaj'),
+ (7,'Hidrolik Sistemler'),
+ (8,'Kalite Kontrol Lab'),
+ (9,'Ar-Ge Merkezi'),
+ (10,'Lojistik'),
+ (11,'Hangar A1'),
+ (12,'Hangar A2'),
+ (13,'Hangar B1'),
+ (14,'Kompozit Atölyesi'),
+ (15,'Kablolama Bölümü'),
+ (16,'Yazılım Entegrasyon'),
+ (17,'Simülatör Merkezi'),
+ (18,'Metal Döküm'),
+ (19,'CNC İşleme Merkezi'),
+ (20,'Lazer Kesim'),
+ (21,'3D Yazıcı Laboratuvarı'),
+ (22,'Hassas Ölçüm İstasyonu'),
+ (23,'Isıl İşlem'),
+ (24,'Yüzey Kaplama'),
+ (25,'Kimyasal Analiz'),
+ (26,'Yakıt Sistemleri'),
+ (27,'Egzoz Montaj'),
+ (28,'Kabin İç Tasarım'),
+ (29,'Kargo Bölümü'),
+ (30,'Acil Durum Sistemleri'),
+ (31,'Radar Test Hattı'),
+ (32,'Anten Montaj'),
+ (33,'Optik Sistemler'),
+ (34,'Batarya Teknolojileri'),
+ (35,'Hava İklimlendirme'),
+ (36,'Basınç Test Odası'),
+ (37,'Tahribatsız Muayene'),
+ (38,'Pervane Balans'),
+ (39,'Türbin Montaj'),
+ (40,'Yağlama Sistemleri'),
+ (41,'Fren Sistemleri'),
+ (42,'Teknik Çizim Ofisi'),
+ (43,'Arşiv ve Dokümantasyon'),
+ (44,'Güvenlik Testleri'),
+ (45,'Paketleme Hattı'),
+ (46,'Yedek Parça Deposu'),
+ (47,'Eğitim Akademisi'),
+ (48,'Atık Yönetimi'),
+ (49,'Kalibrasyon Merkezi'),
+ (50,'Prototip Atölyesi');
+INSERT INTO "Makinalar" ("Makine_ID","Makine_Adi","Model","Son_Bakim_Tarihi","Durum") VALUES (1,'CNC-01','Siemens V50','2024-01-10','Aktif'),
+ (2,'3D-Printer-01','Ultimaker S5','2024-02-15','Aktif'),
+ (3,'Lazer-Kesim-A','Trumpf 3030','2024-01-20','Bakımda'),
+ (4,'CNC-02','Mazak VCN-530C','2024-03-05','Aktif'),
+ (5,'CNC-03','Haas VF-4SS','2024-02-28','Aktif'),
+ (6,'Robot-Kol-01','KUKA KR QUANTEC','2024-01-15','Aktif'),
+ (7,'Robot-Kol-02','ABB IRB 6700','2024-03-10','Aktif'),
+ (8,'Otoklav-01','ASC Process Systems','2023-11-20','Aktif'),
+ (9,'Otoklav-02','Scholz Maschinenbau','2024-04-01','Bakımda'),
+ (10,'Su-Jeti-01','Flow Mach 500','2024-02-10','Aktif'),
+ (11,'Hidrolik-Pres-01','Schuler SMG','2023-12-05','Aktif'),
+ (12,'Perçin-Robotu-01','Electroimpact AFP','2024-03-22','Aktif'),
+ (13,'CMM-Ölçüm-01','Zeiss Prismo','2024-01-30','Aktif'),
+ (14,'Ultrasonik-Test-A','Olympus OmniScan','2024-02-05','Aktif'),
+ (15,'Fırın-Kurutma-01','Grieve No. 850','2023-10-15','Arızalı'),
+ (16,'CNC-Torna-01','Doosan Lynx 2100','2024-03-15','Aktif'),
+ (17,'Kompozit-Kesim-01','Gerber Paragon','2024-02-20','Aktif'),
+ (18,'Boya-Robotu-01','Fanuc P-250iB','2024-01-05','Aktif'),
+ (19,'X-Ray-Tarama-01','GE Phoenix V|tome|x','2024-03-01','Aktif'),
+ (20,'Kumlama-Kabini-01','Wheelabrator','2023-09-20','Aktif'),
+ (21,'Kimyasal-Havuz-01','Alodine Treatment','2024-04-10','Bakımda'),
+ (22,'CNC-04','Mori Seiki NMV5000','2024-02-12','Aktif'),
+ (23,'Vakum-Pompası-01','Busch R5','2024-03-18','Aktif'),
+ (24,'Lazer-Kaynak-01','IPG Photonics','2024-01-25','Aktif'),
+ (25,'Test-Standı-Motor','Honeywell Custom','2023-12-12','Arızalı'),
+ (26,'Vinç-Tavan-01','Demag V-Type','2024-02-01','Aktif'),
+ (27,'Vinç-Tavan-02','Konecranes S-series','2024-02-01','Aktif'),
+ (28,'CNC-05','Hermle C400','2024-03-30','Aktif'),
+ (29,'Montaj-Hattı-Jig-01','Custom Tooling','2023-08-15','Aktif'),
+ (30,'Hava-Kompresörü-01','Atlas Copco GA37','2024-04-05','Bakımda'),
+ (31,'Robot-Kol-03','Fanuc M-20iB','2024-02-14','Aktif'),
+ (32,'3D-Tarayıcı-01','Creaform HandySCAN','2024-03-05','Aktif'),
+ (33,'CNC-Taşlama-01','Studer S33','2024-01-18','Aktif'),
+ (34,'Elektro-Erozyon-01','Makino U6','2024-02-25','Aktif'),
+ (35,'İndüksiyon-Ocağı-01','Inductotherm','2023-11-30','Aktif'),
+ (36,'CNC-06','Okuma GENOS M560-V','2024-03-12','Aktif'),
+ (37,'Hidrolik-Ünite-01','Bosch Rexroth','2024-04-12','Bakımda'),
+ (38,'Soğutma-Sistemi-01','Chiller CW-6000','2024-01-22','Aktif'),
+ (39,'Forklift-Elektrikli-01','Jungheinrich EFG','2024-03-20','Aktif'),
+ (40,'Forklift-Elektrikli-02','Linde E25','2024-03-20','Aktif'),
+ (41,'Lazer-Markalama-01','Keyence MD-X','2024-02-10','Aktif'),
+ (42,'Spektrometre-01','Thermo Scientific','2024-01-12','Aktif'),
+ (43,'CNC-07','Hurco VMX42i','2024-03-25','Aktif'),
+ (44,'Robot-Kol-04','Yaskawa GP25','2024-02-05','Aktif'),
+ (45,'Bant-Konveyör-01','FlexLink X45','2023-10-10','Aktif'),
+ (46,'Tork-Anahtarı-Kalibrasyon','Stahlwille','2024-04-02','Aktif'),
+ (47,'Statik-Test-Cihazı','Instron 5980','2024-01-08','Aktif'),
+ (48,'Kabin-Basınç-Test-Ünitesi','Aerosys','2024-03-14','Aktif'),
+ (49,'CNC-08','Tormach 1100MX','2024-02-20','Aktif'),
+ (50,'Dengelenme-Makinesi','Schenck RoTec','2024-01-28','Aktif');
+INSERT INTO "Parca_Tipleri" ("Tip_ID","Parca_Adi","Malzeme_Tipi","Kritiklik_Seviyesi") VALUES (1,'Türbin Kanadı','Titanyum','Yüksek'),
+ (2,'Kanat Rib','Alüminyum 7075','Yüksek'),
+ (3,'Hidrolik Pompa','Çelik','Orta'),
+ (4,'Pencere Paneli','Pleksiglas','Düşük'),
+ (5,'İniş Takımı Dikmesi','Karbon Çelik','Yüksek'),
+ (6,'Perçin','Alüminyum','Düşük'),
+ (7,'Yakıt Sensörü','Karma','Yüksek'),
+ (8,'Koltuk Rayı','Magnezyum','Düşük'),
+ (9,'Motor Valfi','Çelik','Yüksek'),
+ (10,'Radar Anteni','Kompozit','Orta'),
+ (11,'Pitot Tüpü','Alüminyum Alaşım','Yüksek'),
+ (12,'Fren Diski','Karbon Kompozit','Yüksek'),
+ (13,'Flap Aktüatörü','Çelik','Yüksek'),
+ (14,'Radom','Cam Elyaf','Orta'),
+ (15,'Kokpit Camı','Güçlendirilmiş Cam','Yüksek'),
+ (16,'Yolcu Koltuğu','Alüminyum ve Kumaş','Düşük'),
+ (17,'Acil Çıkış Kapısı','Alüminyum 2024','Yüksek'),
+ (18,'Kargo Kapağı Menteşesi','Titanyum','Orta'),
+ (19,'Altimetre','Karma','Yüksek'),
+ (20,'Gövde Paneli','Alüminyum 7075','Yüksek'),
+ (21,'Burun İniş Takımı Lastiği','Kauçuk','Yüksek'),
+ (22,'Yön Dümeni (Rudder)','Karbon Fiber','Yüksek'),
+ (23,'İrtifa Dümeni (Elevator)','Karbon Fiber','Yüksek'),
+ (24,'Fren Hidrolik Hortumu','Teflon ve Çelik Örgü','Yüksek'),
+ (25,'Motor Kaportası (Nacelle)','Alüminyum Balpeteği','Orta'),
+ (26,'Yangın Söndürme Tüpü','Çelik','Yüksek'),
+ (27,'Kabin Filtresi (HEPA)','Sentetik Elyaf','Düşük'),
+ (28,'Uçuş Kontrol Bilgisayarı','Karma','Yüksek'),
+ (29,'Yakıt Tankı Contası','Nitril Kauçuk','Yüksek'),
+ (30,'Emniyet Kemeri Tokası','Çelik','Düşük'),
+ (31,'Otopilot Modülü','Karma','Yüksek'),
+ (32,'VHF Anteni','Alüminyum','Orta'),
+ (33,'Silecek Motoru','Alüminyum ve Bakır','Düşük'),
+ (34,'Statik Püskürtücü','Karbon ve Plastik','Orta'),
+ (35,'Buzlanma Önleyici Isıtıcı','Karma','Yüksek'),
+ (36,'Kablo Demeti','Bakır ve Teflon','Yüksek'),
+ (37,'Oksijen Maskesi','Silikon ve Plastik','Yüksek'),
+ (38,'Kabin İçi Aydınlatma','LED ve Plastik','Düşük'),
+ (39,'APU Egzoz Borusu','İnkonel','Orta'),
+ (40,'Motor Fan Palesi','Titanyum','Yüksek'),
+ (41,'Güneşlik','Plastik','Düşük'),
+ (42,'Tekerlek Jantı','Alüminyum Alaşım','Yüksek'),
+ (43,'Hücum Kenarı Slattı','Alüminyum ve Kompozit','Yüksek'),
+ (44,'Kara Kutu (FDR/CVR)','Titanyum ve Çelik','Yüksek'),
+ (45,'İklimlendirme Kompresörü','Çelik ve Alüminyum','Orta'),
+ (46,'Acil Durum Kaydırağı','Poliüretan ve Naylon','Yüksek'),
+ (47,'Tuvalet Modülü','Plastik ve Alüminyum','Düşük'),
+ (48,'Motor Yağ Pompası','Çelik','Yüksek'),
+ (49,'Sensör Braketi','Alüminyum','Orta'),
+ (50,'Pervane (Propeller)','Kompozit','Yüksek');
+INSERT INTO "Teknisyenler" ("Teknisyen_ID","Ad","Soyad","Bolum_ID","Deneyim_Yili") VALUES (1,'Burak','Kandemir',1,10),
+ (2,'Bekir Efe','Öztürk',2,5),
+ (3,'Recep Barış','Hotunlu',3,8),
+ (4,'Enes','Demir',4,12),
+ (5,'Ahmet Burak','Ermiş',5,3),
+ (6,'Barış','Hotunlu',21,2),
+ (7,'Mehmet','Hür',6,4),
+ (8,'Zeynep','Koç',7,7),
+ (9,'Emre','Arslan',8,2),
+ (10,'Cem','Polat',9,15),
+ (11,'Elif','Yıldırım',10,6),
+ (12,'Hakan','Erdoğan',1,9),
+ (13,'Burcu','Çetin',2,3),
+ (14,'Deniz','Tekin',3,11),
+ (15,'Gökhan','Aydın',4,8),
+ (16,'Selin','Öztürk',5,5),
+ (17,'Ozan','Turan',11,2),
+ (18,'Gizem','Bulut',12,4),
+ (19,'Mert','Yıldız',13,1),
+ (20,'Eda','Doğan',14,7),
+ (21,'Kaan','Kurt',15,10),
+ (22,'Cansu','Güler',16,6),
+ (23,'Tolga','Şen',17,3),
+ (24,'İrem','Aktaş',18,5),
+ (25,'Volkan','Çoban',19,14),
+ (26,'Aslı','Güneş',20,8),
+ (27,'Sinan','Yalçın',22,2),
+ (28,'Buse','Kılıç',23,9),
+ (29,'Erdem','Bozkurt',24,4),
+ (30,'Melis','Aslan',25,11),
+ (31,'Efe','Uysal',1,1),
+ (32,'Derya','Köse',2,6),
+ (33,'Bora','Çakar',3,13),
+ (34,'Pelin','Yaman',4,7),
+ (35,'Utku','Taş',5,5),
+ (36,'Ceren','Acar',6,2),
+ (37,'Serkan','Gül',7,8),
+ (38,'Damla','Avcı',8,3),
+ (39,'Oğuz','Sarı',9,12),
+ (40,'Duygu','Karaca',10,4),
+ (41,'Kerem','Uğur',11,6),
+ (42,'Ezgi','Soylu',12,10),
+ (43,'Onur','Gürbüz',13,2),
+ (44,'Tuğçe','Er',14,5),
+ (45,'Umut','Kaya',15,7),
+ (46,'Yaren','Tunç',16,3),
+ (47,'Alper','Keser',17,11),
+ (48,'Merve','Eren',18,9),
+ (49,'Batuhan','Gök',19,4),
+ (50,'Simge','Biçer',20,1);
+INSERT INTO "Uretim" ("Uretim_ID","Seri_No","Tip_ID","Makine_ID","Teknisyen_ID","Uretim_Tarihi","Durum") VALUES (1,'SN-2024-1',1,1,1,'2026-03-25 20:00:40','Hatasız'),
+ (2,'SN-2024-2',2,2,2,'2026-03-25 20:00:40','Hatasız'),
+ (3,'SN-2024-3',3,3,3,'2026-03-25 20:00:40','Hatasız'),
+ (4,'SN-2024-4',4,4,4,'2026-03-25 20:00:40','Hatasız'),
+ (5,'SN-2024-5',5,5,5,'2026-03-25 20:00:40','Hatalı'),
+ (6,'SN-2024-6',6,6,6,'2026-03-25 20:00:40','Hatasız'),
+ (7,'SN-2024-7',7,7,7,'2026-03-25 20:00:40','İncelemede'),
+ (8,'SN-2024-8',8,8,8,'2026-03-25 20:00:40','Hatasız'),
+ (9,'SN-2024-9',9,9,9,'2026-03-25 20:00:40','Hatasız'),
+ (10,'SN-2024-10',10,10,10,'2026-03-25 20:00:40','Hatalı'),
+ (11,'SN-2024-11',11,11,11,'2026-03-25 20:00:40','Hatasız'),
+ (12,'SN-2024-12',12,12,12,'2026-03-25 20:00:40','Hatasız'),
+ (13,'SN-2024-13',13,13,13,'2026-03-25 20:00:40','Hatasız'),
+ (14,'SN-2024-14',14,14,14,'2026-03-25 20:00:40','İncelemede'),
+ (15,'SN-2024-15',15,15,15,'2026-03-25 20:00:40','Hatalı'),
+ (16,'SN-2024-16',16,16,16,'2026-03-25 20:00:40','Hatasız'),
+ (17,'SN-2024-17',17,17,17,'2026-03-25 20:00:40','Hatasız'),
+ (18,'SN-2024-18',18,18,18,'2026-03-25 20:00:40','Hatasız'),
+ (19,'SN-2024-19',19,19,19,'2026-03-25 20:00:40','Hatasız'),
+ (20,'SN-2024-20',20,20,20,'2026-03-25 20:00:40','Hatalı'),
+ (21,'SN-2024-21',21,21,21,'2026-03-25 20:00:40','İncelemede'),
+ (22,'SN-2024-22',22,22,22,'2026-03-25 20:00:40','Hatasız'),
+ (23,'SN-2024-23',23,23,23,'2026-03-25 20:00:40','Hatasız'),
+ (24,'SN-2024-24',24,24,24,'2026-03-25 20:00:40','Hatasız'),
+ (25,'SN-2024-25',25,25,25,'2026-03-25 20:00:40','Hatalı'),
+ (26,'SN-2024-26',26,26,26,'2026-03-25 20:00:40','Hatasız'),
+ (27,'SN-2024-27',27,27,27,'2026-03-25 20:00:40','Hatasız'),
+ (28,'SN-2024-28',28,28,28,'2026-03-25 20:00:40','İncelemede'),
+ (29,'SN-2024-29',29,29,29,'2026-03-25 20:00:40','Hatasız'),
+ (30,'SN-2024-30',30,30,30,'2026-03-25 20:00:40','Hatalı'),
+ (31,'SN-2024-31',31,31,31,'2026-03-25 20:00:40','Hatasız'),
+ (32,'SN-2024-32',32,32,32,'2026-03-25 20:00:40','Hatasız'),
+ (33,'SN-2024-33',33,33,33,'2026-03-25 20:00:40','Hatasız'),
+ (34,'SN-2024-34',34,34,34,'2026-03-25 20:00:40','Hatasız'),
+ (35,'SN-2024-35',35,35,35,'2026-03-25 20:00:40','Hatalı'),
+ (36,'SN-2024-36',36,36,36,'2026-03-25 20:00:40','Hatasız'),
+ (37,'SN-2024-37',37,37,37,'2026-03-25 20:00:40','Hatasız'),
+ (38,'SN-2024-38',38,38,38,'2026-03-25 20:00:40','Hatasız'),
+ (39,'SN-2024-39',39,39,39,'2026-03-25 20:00:40','Hatasız'),
+ (40,'SN-2024-40',40,40,40,'2026-03-25 20:00:40','Hatalı'),
+ (41,'SN-2024-41',41,41,41,'2026-03-25 20:00:40','Hatasız'),
+ (42,'SN-2024-42',42,42,42,'2026-03-25 20:00:40','İncelemede'),
+ (43,'SN-2024-43',43,43,43,'2026-03-25 20:00:40','Hatasız'),
+ (44,'SN-2024-44',44,44,44,'2026-03-25 20:00:40','Hatasız'),
+ (45,'SN-2024-45',45,45,45,'2026-03-25 20:00:40','Hatalı'),
+ (46,'SN-2024-46',46,46,46,'2026-03-25 20:00:40','Hatasız'),
+ (47,'SN-2024-47',47,47,47,'2026-03-25 20:00:40','Hatasız'),
+ (48,'SN-2024-48',48,48,48,'2026-03-25 20:00:40','Hatasız'),
+ (49,'SN-2024-49',49,49,49,'2026-03-25 20:00:40','İncelemede'),
+ (50,'SN-2024-50',50,50,50,'2026-03-25 20:00:40','Hatalı');
+CREATE VIEW View_Bakim_Gerekenler AS
+SELECT Makine_ID, Makine_Adi, Son_Bakim_Tarihi, Durum
+FROM Makinalar WHERE Son_Bakim_Tarihi <= date('now', '-30 days') OR Son_Bakim_Tarihi IS NULL;
+CREATE VIEW View_Bolum_Uretim_Ozeti AS
+SELECT B.Bolum_Adi, COUNT(U.Uretim_ID) AS Toplam_Uretim
+FROM Bolumler B
+JOIN Teknisyenler T ON B.Bolum_ID = T.Bolum_ID
+JOIN Uretim U ON T.Teknisyen_ID = U.Teknisyen_ID GROUP BY B.Bolum_Adi;
+CREATE VIEW View_Genel_Panel AS
+SELECT U.Seri_No, T.Ad || ' ' || T.Soyad AS Teknisyen, M.Makine_Adi, PT.Parca_Adi, U.Durum, U.Uretim_Tarihi
+FROM Uretim U
+JOIN Teknisyenler T ON U.Teknisyen_ID = T.Teknisyen_ID
+JOIN Makinalar M ON U.Makine_ID = M.Makine_ID
+JOIN Parca_Tipleri PT ON U.Tip_ID = PT.Tip_ID;
+CREATE VIEW View_Hata_Analizi AS
+SELECT T.Parca_Adi, COUNT(K.Kontrol_ID) AS Toplam_Hata_Sayisi
+FROM Parca_Tipleri T
+JOIN Uretim U ON T.Tip_ID = U.Tip_ID
+JOIN Kalite_Kontrol K ON U.Uretim_ID = K.Uretim_ID GROUP BY T.Parca_Adi;
+CREATE VIEW View_Kritik_Parcalar AS
+SELECT P.Seri_No, T.Parca_Adi, T.Kritiklik_Seviyesi, P.Durum
+FROM Uretim P JOIN Parca_Tipleri T ON P.Tip_ID = T.Tip_ID
+WHERE T.Kritiklik_Seviyesi = 'Yüksek';
+CREATE TRIGGER trg_Hata_Log_Ekle
+AFTER UPDATE ON Uretim FOR EACH ROW WHEN NEW.Durum = 'Hatalı'
+BEGIN
+    INSERT INTO Kalite_Kontrol (Uretim_ID, Hata_Aciklamasi)
+    VALUES (NEW.Uretim_ID, 'Otomatik Log: Üretim sonrası hata tespit edildi.');
+END;
+CREATE TRIGGER trg_Makine_Bakim_Guncelle
+AFTER INSERT ON Makine_Bakim_Loglari
+BEGIN
+    UPDATE Makinalar SET Durum = 'Bakımda' WHERE Makine_ID = NEW.Makine_ID;
+END;
+CREATE TRIGGER trg_Teknisyen_Ekle_Log
+AFTER INSERT ON Teknisyenler
+BEGIN
+    INSERT INTO Teknisyen_Islem_Log (Islem_Tipi, Ayrinti)
+    VALUES ('EKLENDİ', NEW.Ad || ' ' || NEW.Soyad || ' sisteme kaydedildi.');
+END;
+CREATE TRIGGER trg_Teknisyen_Sil_Log
+AFTER DELETE ON Teknisyenler
+BEGIN
+    INSERT INTO Teknisyen_Islem_Log (Islem_Tipi, Ayrinti)
+    VALUES ('SİLİNDİ', OLD.Ad || ' ' || OLD.Soyad || ' sistemden çıkarıldı.');
+END;
+CREATE TRIGGER trg_Teknisyen_Silme_Kontrol
+BEFORE DELETE ON Teknisyenler
+BEGIN
+    SELECT CASE 
+        WHEN (SELECT COUNT(*) FROM Uretim WHERE Teknisyen_ID = OLD.Teknisyen_ID) > 0 
+        THEN RAISE(ABORT, 'HATA: Bu teknisyene ait üretim kaydı var, silinemez!') 
+    END;
+END;
+COMMIT;
